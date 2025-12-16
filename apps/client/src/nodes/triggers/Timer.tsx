@@ -1,8 +1,5 @@
 import { Handle, Position } from "@xyflow/react";
-
-export type TimerNodeMetadata = {
-    time: number
-}
+import { type TimerNodeMetadata } from "common/types";
 
 export function Timer({data}:{
     data: {

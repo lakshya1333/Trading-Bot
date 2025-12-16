@@ -19,8 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Button } from "./ui/button";
-import type { PriceTriggerMetadata } from "@/nodes/triggers/PriceTrigger";
-import type { TimerNodeMetadata } from "@/nodes/triggers/Timer";
+
+import { type TimerNodeMetadata,type PriceTriggerMetadata} from "common/types";
 import { Input } from "./ui/input";
 
 
@@ -34,7 +34,6 @@ const SUPPORTED_TRIGGERS = [{
     description: "Runs whenever the price goes above or below a certain threshold for an asset"
 }]
 
-export const SUPPORTED_ASSETS = ["SOL","BTC","ETH"]
 
 export const TriggerSheet = ({
     onSelect
