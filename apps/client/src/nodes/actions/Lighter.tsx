@@ -1,0 +1,38 @@
+import { SUPPORTED_ASSETS } from "@/components/TriggerSheet"
+import { Handle, Position } from "@xyflow/react"
+
+export type TradingMetadata = {
+    type: "LONG" | "SHORT",
+    qty: number,
+    symbol: typeof SUPPORTED_ASSETS
+}
+
+export function Lighter({data}:{
+    data:{
+        metadata: TradingMetadata
+    }
+}) {
+    return <div className="min-w-[200px] bg-white rounded-lg shadow-md border border-gray-300 overflow-hidden cursor-move">
+        <div className="bg-orange-600 px-3 py-2">
+            <div className="text-white font-semibold text-sm">Lighter Trade</div>
+        </div>
+        <div className="p-3 space-y-2 text-sm">
+            <div className="flex justify-between items-center">
+                <span className="text-gray-600">Type:</span>
+                <span className={`font-semibold ${data.metadata.type === 'LONG' ? 'text-green-600' : 'text-red-600'}`}>
+                    {data.metadata.type}
+                </span>
+            </div>
+            <div className="flex justify-between items-center">
+                <span className="text-gray-600">Symbol:</span>
+                <span className="font-semibold text-gray-900">{data.metadata.symbol}</span>
+            </div>
+            <div className="flex justify-between items-center">
+                <span className="text-gray-600">Qty:</span>
+                <span className="font-semibold text-gray-900">{data.metadata.qty}</span>
+            </div>
+        </div>
+        <Handle type="source" position={Position.Right} className="!bg-orange-600 !w-3 !h-3"></Handle>
+        <Handle type="target" position={Position.Left} className="!bg-orange-600 !w-3 !h-3"></Handle>
+    </div>
+}
