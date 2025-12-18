@@ -4,7 +4,7 @@
   "main": "index.ts",
   "type": "module",
   "private": true,
-  "exports":{
+  "exports": {
     "./types": "./index.ts"
   },
   "scripts": {
@@ -12,5 +12,8 @@
   },
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "zod": "^4.2.1"
+  }
 }
