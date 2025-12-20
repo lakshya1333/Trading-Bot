@@ -1,9 +1,9 @@
 import 'dotenv/config'
 import express from 'express'
 import mongoose from 'mongoose'
-import { SigninSchema, SignupSchema } from  "common/types"
+import { CreateWorkflowSchema, SigninSchema, SignupSchema, UpdateWorkflowSchema } from  "common/types"
 import jwt from 'jsonwebtoken'
-import { UserModel } from 'db/client'
+import { ExecutionModel, NodesModel, UserModel, WorkflowModel } from 'db/client'
 import { authMiddleware } from './middleware.js'
 mongoose.connect(process.env.MONGO_URL!)
 const JWT_SECRET = process.env.JWT_SECRET!
@@ -65,32 +65,84 @@ app.post("/signin",async (req,res)=>{
         }
     } catch(e){
         res.status(411).json({
-            message: "Username already exists"
+            message: "Server is not responding"
         })
     }
 })
 
-app.post("/workflow", authMiddleware,(req,res)=>{
+app.post("/workflow", authMiddleware,async(req,res)=>{
     const userId = req.userId!
+    const {success,data} = CreateWorkflowSchema.safeParse(req.body);
+    if(!success){
+        res.status(403).json({
+            message: "Incorrect inputs"
+        })
+        return
+    }
+    try{
+        const workflow = await WorkflowModel.create({
+            userId,
+            nodes: data.nodes,
+            edges: data.edges
+        })
+        res.json({
+            id: workflow._id
+        })
+    }catch(e){
+        res.status(411).json({
+            message: "Failed to create workflow"
+        })
+    }
 })
 
-app.put("/workflow",authMiddleware,(req,res)=>{
-
+app.put("/workflow/:workflowId",authMiddleware,async(req,res)=>{
+    const {success,data} = UpdateWorkflowSchema.safeParse(req.body)
+    if(!success){
+        res.status(403).json({
+            message: "Incorrect inputs"
+        })
+        return
+    }
+    try{
+        const workflow = await WorkflowModel.findByIdAndUpdate(req.params.workflowId,data,{new:true})
+        if(!workflow){
+            res.status(404).json({
+                message: "workflow not found"
+            })
+            return
+        }
+        res.json({
+            id: workflow._id
+        })
+    }catch(e){
+        res.status(411).json({
+            message: "Failed to update workflow"
+        })
+    }
 })
 
-app.get("/workflow/:workflowId",authMiddleware,(req,res)=>{
-
+app.get("/workflow/:workflowId",authMiddleware,async (req,res)=>{
+    const workflow = await WorkflowModel.findById(req.params.workflowId)
+    if(!workflow){
+        res.status(404).json({
+            message: "Workflow not found"
+        })
+        return
+    }
+    res.json(workflow)
 })
 
-app.get("/workflow/executions/:workflowId",authMiddleware,(req,res)=>{
-
+app.get("/workflow/executions/:workflowId",authMiddleware,async (req,res)=>{
+    const executions = await ExecutionModel.find({workflowId: new mongoose.Types.ObjectId(req.params.workflowId)})
+    res.json(executions)
 })
 
-app.get("/nodes",(req,res)=>{
-
+app.get("/nodes",async (req,res)=>{
+    const nodes = await NodesModel.find()
+    res.json(nodes)
 })
 
-app.listen(3000)
+app.listen(process.env.PORT || 3000)
 
 
 
