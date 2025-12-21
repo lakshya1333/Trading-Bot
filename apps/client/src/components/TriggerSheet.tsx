@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select"
 import { Button } from "./ui/button";
 
-import { type TimerNodeMetadata,type PriceTriggerMetadata} from "common/types";
+import { type TimerNodeMetadata,type PriceTriggerMetadata, SUPPORTED_ASSETS} from "common/types";
 import { Input } from "./ui/input";
 
 
@@ -40,7 +40,7 @@ export const TriggerSheet = ({
 }: {
     onSelect: (kind: NodeKind, metadata: NodeMetaData) => void
 }) => {
-    const [metadata,setMetadata] = useState<PriceTriggerMetadata | TimerNodeMetadata>({
+    const [metadata,setMetadata] = useState<Partial<PriceTriggerMetadata & TimerNodeMetadata>>({
         time: 3600,
     })
     const [selectedTrigger,setSelectedTrigger] = useState(SUPPORTED_TRIGGERS[0].id)
@@ -75,7 +75,7 @@ export const TriggerSheet = ({
           <label className="text-sm font-medium">Interval (seconds)</label>
           <Input 
             type="number"
-            value={metadata.time} 
+            value={metadata.time || ''} 
             onChange={(e) => setMetadata(metadata => ({
               ...metadata,
               time: Number(e.target.value)
@@ -91,6 +91,7 @@ export const TriggerSheet = ({
             <label className="text-sm font-medium">Target Price</label>
             <Input 
               type="number"
+              value={metadata.price || ''}
               onChange={(e)=>setMetadata(m =>({
                 ...m,
                 price: Number(e.target.value)
@@ -101,7 +102,7 @@ export const TriggerSheet = ({
           
           <div className="space-y-2">
             <label className="text-sm font-medium">Asset</label>
-            <Select value={metadata.asset} onValueChange={(value) => setMetadata(metadata => ({
+            <Select value={metadata.asset || ''} onValueChange={(value) => setMetadata(metadata => ({
               ...metadata,
               asset: value
             }))}>

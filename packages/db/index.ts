@@ -98,6 +98,11 @@ const CredentialsTypeSchema = new Schema({
 })
 
 const NodesSchema = new Schema({
+    name: {
+        type: String,
+        required: true,
+        unique: true
+    },
     title : {
         type: String,
         required: true

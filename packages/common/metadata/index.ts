@@ -1,10 +1,17 @@
 export const SUPPORTED_ASSETS = ["SOL","BTC","ETH"]
 
+export const SUPPORTED_ACTIONS = [
+    { id: "hyperliquid", title: "Hyperliquid Exchange" },
+    { id: "lighter", title: "Lighter Exchange" },
+    { id: "backpack", title: "Backpack Exchange" }
+]
 
 export type TradingMetadata = {
-    type: "LONG" | "SHORT",
+    actionType: string,
+    type: "long" | "short",
     qty: number,
-    symbol: typeof SUPPORTED_ASSETS
+    symbol: string,
+    apiKey: string
 }
 
 export type TimerNodeMetadata = {

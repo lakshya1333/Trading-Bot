@@ -20,21 +20,8 @@ import {
 } from "@/components/ui/select"
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { type TradingMetadata, SUPPORTED_ASSETS} from "common/types";
-
-const SUPPORTED_ACTIONS = [{
-    id: "hyperliquid",
-    title: "Hyperliquid",
-    description: "Place a trade on hyperliquid"
-    },{
-    id: "lighter",
-    title: "Lighter",
-    description: "Place a trade on lighter"
-    },{
-    id: "backpack",
-    title: "Backpack",
-    description: "Place a trade on backpack" 
-}]
+import { Label } from "./ui/label";
+import { type TradingMetadata, SUPPORTED_ASSETS, SUPPORTED_ACTIONS} from "common/types";
 
 
 export const ActionSheet = ({
@@ -42,22 +29,26 @@ export const ActionSheet = ({
 }: {
     onSelect: (kind: NodeKind, metadata: NodeMetaData) => void
 }) => {
-    const [metadata,setMetadata] = useState<TradingMetadata | {}>({})
+    const [metadata,setMetadata] = useState<Partial<TradingMetadata>>({})
     const [selectedAction,setSelectedAction] = useState(SUPPORTED_ACTIONS[0].id)
+    const [error, setError] = useState('')
     return <Sheet open={true}>
   <SheetContent className="w-[400px]">
     <SheetHeader className="space-y-2 pb-6">
-      <SheetTitle>Select Action</SheetTitle>
+      <SheetTitle>Select action</SheetTitle>
       <SheetDescription>
-        Choose the trading action to execute
+        Choose an exchange and configure your trade parameters.
       </SheetDescription>
     </SheetHeader>
     
     <div className="space-y-4">
       <div className="space-y-2">
-        <label className="text-sm font-medium">Exchange Platform</label>
-        <Select value={selectedAction} onValueChange={(value) => setSelectedAction(value)}>
-          <SelectTrigger className="w-full">
+        <Label htmlFor="action-type">Action type</Label>
+        <Select value={selectedAction} onValueChange={(value) => {
+          setSelectedAction(value)
+          setMetadata(m => ({...m, actionType: value}))
+        }}>
+          <SelectTrigger id="action-type" className="w-full">
             <SelectValue placeholder="Select an exchange" />
           </SelectTrigger>
           <SelectContent>
@@ -72,62 +63,90 @@ export const ActionSheet = ({
 
       {(selectedAction === "hyperliquid" || selectedAction === "lighter" || selectedAction === "backpack") && (
         <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Position Type</label>
-            <Select value={metadata?.type} onValueChange={(value) => setMetadata(metadata => ({
-                ...metadata,
-                type: value
-            }))}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select position type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value={"long"}>LONG</SelectItem>
-                  <SelectItem value={"short"}>SHORT</SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="position-type">type</Label>
+              <Select value={metadata?.type} onValueChange={(value: "long" | "short") => setMetadata(metadata => ({
+                  ...metadata,
+                  type: value
+              }))}>
+                <SelectTrigger id="position-type" className="w-full">
+                  <SelectValue placeholder="Weather it is a long or a short" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    <SelectItem value="long">Long</SelectItem>
+                    <SelectItem value="short">Short</SelectItem>
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="asset">Asset</Label>
+              <Select value={metadata?.symbol} onValueChange={(value) => setMetadata(metadata => ({
+                  ...metadata,
+                  symbol: value
+              }))}>
+                <SelectTrigger id="asset" className="w-full">
+                  <SelectValue placeholder="Which asset to long or short" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {SUPPORTED_ASSETS.map(asset => (
+                      <SelectItem key={asset} value={asset}>{asset}</SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium">Trading Symbol</label>
-            <Select value={metadata?.symbol} onValueChange={(value) => setMetadata(metadata => ({
-                ...metadata,
-                symbol: value
-            }))}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select an asset" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {SUPPORTED_ASSETS.map(asset => (
-                    <SelectItem key={asset} value={asset}>{asset}</SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Quantity</label>
+            <Label htmlFor="quantity">Quantity</Label>
             <Input 
+              id="quantity"
               type="number"
-              value={metadata.qty} 
+              value={metadata.qty || ''} 
               onChange={(e)=>setMetadata(m =>({
                 ...m,
                 qty: Number(e.target.value)
               }))}
-              placeholder="Enter quantity"
+              placeholder="How much to long or short"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="api-key">API_KEY *</Label>
+            <Input 
+              id="api-key"
+              type="text"
+              value={metadata.apiKey || ''} 
+              onChange={(e)=>setMetadata(m =>({
+                ...m,
+                apiKey: e.target.value
+              }))}
+              placeholder="Enter your API key"
+              required
             />
           </div>
         </div>
       )}
     </div>
 
-    <SheetFooter className="mt-6">
+    <SheetFooter className="mt-6 flex-col gap-3">
+      {error && (
+        <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200">
+          {error}
+        </div>
+      )}
       <Button 
         onClick={()=>{
+          if (!metadata.type || !metadata.symbol || !metadata.qty || !metadata.apiKey) {
+            setError('Please fill in all required fields including API Key')
+            return
+          }
+          setError('')
           onSelect(selectedAction, metadata)
         }} 
         className="w-full"

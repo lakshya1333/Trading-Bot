@@ -1,5 +1,6 @@
 import 'dotenv/config'
 import express from 'express'
+import cors from 'cors'
 import mongoose from 'mongoose'
 import { CreateWorkflowSchema, SigninSchema, SignupSchema, UpdateWorkflowSchema } from  "common/types"
 import jwt from 'jsonwebtoken'
@@ -10,6 +11,7 @@ const JWT_SECRET = process.env.JWT_SECRET!
 
 
 const app = express()
+app.use(cors())
 app.use(express.json())
 
 app.post("/signup",async (req,res)=>{
@@ -72,10 +74,12 @@ app.post("/signin",async (req,res)=>{
 
 app.post("/workflow", authMiddleware,async(req,res)=>{
     const userId = req.userId!
-    const {success,data} = CreateWorkflowSchema.safeParse(req.body);
+    const {success,data,error} = CreateWorkflowSchema.safeParse(req.body);
     if(!success){
+        console.log("Validation error:", error)
         res.status(403).json({
-            message: "Incorrect inputs"
+            message: "Incorrect inputs",
+            errors: error.errors
         })
         return
     }
@@ -86,11 +90,13 @@ app.post("/workflow", authMiddleware,async(req,res)=>{
             edges: data.edges
         })
         res.json({
-            id: workflow._id
+            _id: workflow._id
         })
     }catch(e){
+        console.error("Workflow creation error:", e)
         res.status(411).json({
-            message: "Failed to create workflow"
+            message: "Failed to create workflow",
+            error: e instanceof Error ? e.message : "Unknown error"
         })
     }
 })
@@ -112,7 +118,7 @@ app.put("/workflow/:workflowId",authMiddleware,async(req,res)=>{
             return
         }
         res.json({
-            id: workflow._id
+            _id: workflow._id
         })
     }catch(e){
         res.status(411).json({
@@ -122,7 +128,7 @@ app.put("/workflow/:workflowId",authMiddleware,async(req,res)=>{
 })
 
 app.get("/workflow/:workflowId",authMiddleware,async (req,res)=>{
-    const workflow = await WorkflowModel.findById(req.params.workflowId)
+    const workflow = await WorkflowModel.findById(req.params.workflowId).populate('nodes.nodeId')
     if(!workflow || workflow.userId.toString() !== req.userId){
         res.status(404).json({
             message: "Workflow not found"
