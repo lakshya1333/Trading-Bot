@@ -1,5 +1,5 @@
 import { NodesModel } from "db/client";
-import { execute as executeLighter } from "./executors/lighter";
+import { execute as executeLighter } from "./executors/lighter.js";
 
 export type NodeDocument = {
     id: string;
@@ -34,9 +34,16 @@ export async function executeRecursive(sourceId: string,nodes: NodeDocument[],ed
         if(!node){
             return
         }
-        switch(node.type){
+        const actionType = node.data?.metadata?.actionType
+        switch(actionType){
             case "lighter":
-
+                await executeLighter(
+                    node.data?.metadata.symbol,
+                    node.data?.metadata.qty,
+                    node.data?.metadata.type,
+                    node.data?.metadata.apiKey
+                )
+                break;
         }
     }))
 
