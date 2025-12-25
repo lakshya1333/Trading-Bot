@@ -21,6 +21,12 @@ export default function WorkflowExecutions() {
   useEffect(() => {
     if (workflowId) {
       loadExecutions()
+      // Poll for updates every 3 seconds
+      const interval = setInterval(() => {
+        loadExecutions()
+      }, 3000)
+      
+      return () => clearInterval(interval)
     }
   }, [workflowId])
 
@@ -88,9 +94,9 @@ export default function WorkflowExecutions() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
                         className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                          execution.status === 'success'
+                          execution.status.toUpperCase() === 'SUCCESS'
                             ? 'bg-green-100 text-green-800'
-                            : execution.status === 'failed'
+                            : execution.status.toUpperCase() === 'FAILURE'
                             ? 'bg-red-100 text-red-800'
                             : 'bg-yellow-100 text-yellow-800'
                         }`}

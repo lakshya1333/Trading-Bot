@@ -137,6 +137,8 @@ const ExecutionSchema = new Schema({
     endtime: {
         type: Date
     }
+}, {
+    timestamps: true
 })
 
 
