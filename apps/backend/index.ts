@@ -93,7 +93,7 @@ app.post("/workflow", authMiddleware,async(req,res)=>{
             _id: workflow._id
         })
     }catch(e){
-        console.error("Workflow creation error:", e)
+        console.error("Workflow creation error found:", e)
         res.status(411).json({
             message: "Failed to create workflow",
             error: e instanceof Error ? e.message : "Unknown error"

@@ -26,7 +26,7 @@ export default function Landing() {
       <div className="text-center space-y-6 p-8">
         <h1 className="text-6xl font-bold text-gray-900">Trading Bot</h1>
         <p className="text-xl text-gray-600 max-w-2xl">
-          Build, automate, and execute your trading workflows with ease
+          Build, automate, and execute your trading workflows 
         </p>
         <div className="flex gap-4 justify-center mt-8">
           <Button size="lg" onClick={handleGetStarted}>
